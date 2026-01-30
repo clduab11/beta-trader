@@ -1,0 +1,350 @@
+# Continue.dev Configuration
+# Reference: https://docs.continue.dev/reference
+# Maximally configured for solo developer workflow
+
+name: "{{PROJECT_NAME}} Continue Config"
+version: "1.0.0"
+schema: v1
+
+# ============================================
+# MODELS CONFIGURATION
+# ============================================
+models:
+  # Primary chat model - Claude for complex reasoning
+  - name: "claude-sonnet"
+    provider: "anthropic"
+    model: "claude-sonnet-4-20250514"
+    apiKey: "${ANTHROPIC_API_KEY}"
+    contextLength: 200000
+    requestOptions:
+      timeout: 120000
+      maxRetries: 3
+
+  # Fast model for autocomplete and quick tasks
+  - name: "claude-haiku"
+    provider: "anthropic"
+    model: "claude-haiku-4-20250514"
+    apiKey: "${ANTHROPIC_API_KEY}"
+    contextLength: 200000
+
+  # Alternative: Gemini for multimodal tasks
+  - name: "gemini-flash"
+    provider: "google"
+    model: "gemini-2.0-flash"
+    apiKey: "${GOOGLE_AI_API_KEY}"
+    contextLength: 1000000
+
+  # Local model fallback (if Ollama available)
+  - name: "local-qwen"
+    provider: "ollama"
+    model: "qwen2.5-coder:14b"
+    apiBase: "http://localhost:11434"
+    contextLength: 32768
+
+# Default model selection
+chat: claude-sonnet
+autocomplete: claude-haiku
+embed: voyage-code-2
+
+# ============================================
+# TAB AUTOCOMPLETE
+# ============================================
+tabAutocomplete:
+  model: claude-haiku
+  maxPromptTokens: 4096
+  debounceDelay: 350
+  multilineCompletions: true
+  useCache: true
+  disableInFiles:
+    - "*.json"
+    - "*.yaml"
+    - "*.yml"
+    - "*.md"
+    - "*.env*"
+
+# ============================================
+# EMBEDDINGS
+# ============================================
+embeddingsProvider:
+  provider: "voyage"
+  model: "voyage-code-2"
+  apiKey: "${VOYAGE_API_KEY}"
+
+# Codebase indexing
+codebaseIndexing:
+  enabled: true
+  chunkSize: 512
+  chunkOverlap: 50
+  maxChunksPerFile: 100
+  ignorePatterns:
+    - "**/node_modules/**"
+    - "**/dist/**"
+    - "**/build/**"
+    - "**/.git/**"
+    - "**/coverage/**"
+    - "**/*.lock"
+    - "**/*.min.js"
+
+# ============================================
+# RERANKING
+# ============================================
+reranker:
+  provider: "voyage"
+  model: "rerank-2"
+  apiKey: "${VOYAGE_API_KEY}"
+
+# ============================================
+# CONTEXT PROVIDERS
+# ============================================
+contextProviders:
+  # File context
+  - name: "file"
+    params:
+      maxFiles: 20
+
+  # Code search
+  - name: "code"
+    params:
+      nResults: 10
+
+  # Codebase search
+  - name: "codebase"
+    params:
+      nResults: 15
+
+  # Git diff context
+  - name: "diff"
+    params:
+      includeUnstaged: true
+
+  # Terminal output
+  - name: "terminal"
+    params:
+      maxLines: 500
+
+  # Open files in editor
+  - name: "open"
+    params:
+      maxOpenFiles: 10
+
+  # Documentation search
+  - name: "docs"
+    params:
+      sites:
+        - name: "TypeScript"
+          startUrl: "https://www.typescriptlang.org/docs/"
+          faviconUrl: "https://www.typescriptlang.org/favicon-32x32.png"
+        - name: "React"
+          startUrl: "https://react.dev/"
+          faviconUrl: "https://react.dev/favicon.ico"
+        - name: "Node.js"
+          startUrl: "https://nodejs.org/docs/"
+          faviconUrl: "https://nodejs.org/favicon.ico"
+
+  # Web search
+  - name: "web"
+    params:
+      provider: "perplexity"
+      apiKey: "${PERPLEXITY_API_KEY}"
+
+  # URL fetching
+  - name: "url"
+
+  # Folder context
+  - name: "folder"
+
+  # Problems/diagnostics
+  - name: "problems"
+
+  # Highlighted code
+  - name: "highlighted"
+
+# ============================================
+# SLASH COMMANDS
+# ============================================
+slashCommands:
+  # Built-in commands
+  - name: "edit"
+    description: "Edit selected code"
+  - name: "comment"
+    description: "Add comments to code"
+  - name: "share"
+    description: "Share conversation"
+  - name: "cmd"
+    description: "Generate shell command"
+  - name: "commit"
+    description: "Generate commit message"
+
+  # Custom commands
+  - name: "review"
+    description: "Review code for issues"
+    prompt: |
+      Review the following code for:
+      1. Bugs and logical errors
+      2. Security vulnerabilities
+      3. Performance issues
+      4. Code style violations (see .gemini/styleguide.md)
+      5. Missing error handling
+
+      Provide specific, actionable feedback.
+
+  - name: "test"
+    description: "Generate tests for code"
+    prompt: |
+      Generate comprehensive tests for this code:
+      - Use Vitest as the testing framework
+      - Include unit tests for all functions
+      - Add edge case tests
+      - Mock external dependencies
+      - Follow AAA pattern (Arrange, Act, Assert)
+
+  - name: "doc"
+    description: "Generate documentation"
+    prompt: |
+      Generate JSDoc documentation for this code:
+      - Include @param for all parameters
+      - Include @returns for return values
+      - Include @throws for potential errors
+      - Add @example blocks where helpful
+
+  - name: "linear"
+    description: "Create Linear issue from context"
+    prompt: |
+      Based on the current context, generate a Linear issue:
+      - Title: Clear, actionable title
+      - Description: Detailed explanation
+      - Acceptance criteria: List of checkboxes
+      - Technical notes: Implementation hints
+
+      Format as markdown.
+
+  - name: "spec"
+    description: "Generate Notion spec from code"
+    prompt: |
+      Create a Notion-ready specification document:
+      - Overview section
+      - Technical requirements
+      - API contracts (if applicable)
+      - Data models
+      - Edge cases
+      - Testing strategy
+
+# ============================================
+# CUSTOM PROMPTS
+# ============================================
+prompts:
+  - name: "system"
+    description: "Default system prompt"
+    prompt: |
+      You are an expert software engineer working on {{PROJECT_NAME}}.
+
+      Follow these guidelines:
+      - Adhere to the coding standards in .gemini/styleguide.md
+      - Use TypeScript with strict mode
+      - Write comprehensive tests for new code
+      - Use conventional commit messages
+      - Document all public APIs with JSDoc
+
+      Current context:
+      - Team: Parallax Analytics (PAR)
+      - Branch naming: {{user}}/PAR-XXX-description
+      - Testing: Vitest
+      - Package manager: pnpm
+
+  - name: "code-review"
+    description: "Code review prompt"
+    prompt: |
+      Review this code as a senior engineer. Focus on:
+      1. **Correctness**: Logic errors, edge cases, null handling
+      2. **Security**: Input validation, injection risks, auth issues
+      3. **Performance**: N+1 queries, memory leaks, unnecessary computations
+      4. **Maintainability**: Code clarity, naming, documentation
+      5. **Testing**: Test coverage, test quality
+
+      Rate severity: 🔴 Critical | 🟠 Warning | 🟡 Suggestion | 🟢 Nice-to-have
+
+  - name: "architecture"
+    description: "Architecture discussion prompt"
+    prompt: |
+      Analyze this code/design from an architectural perspective:
+      1. Does it follow SOLID principles?
+      2. Is the separation of concerns appropriate?
+      3. Are there any coupling issues?
+      4. How testable is this design?
+      5. What are the scaling implications?
+
+      Provide trade-off analysis and recommendations.
+
+# ============================================
+# RULES (Project-specific guidance)
+# ============================================
+rules:
+  - name: "typescript-strict"
+    pattern: "**/*.ts"
+    instructions: |
+      - Use strict TypeScript (no `any`)
+      - Prefer `unknown` over `any` when type is truly unknown
+      - Use explicit return types for functions
+      - Use `const` assertions where appropriate
+
+  - name: "react-components"
+    pattern: "**/*.tsx"
+    instructions: |
+      - Use functional components with hooks
+      - Memoize expensive computations with useMemo
+      - Use React.memo for pure components
+      - Extract custom hooks for reusable logic
+
+  - name: "api-routes"
+    pattern: "**/api/**/*.ts"
+    instructions: |
+      - Validate all inputs with Zod
+      - Return consistent response shapes
+      - Handle errors with appropriate status codes
+      - Log errors with context
+
+# ============================================
+# AGENT CONFIGURATION
+# ============================================
+agents:
+  - name: "developer"
+    model: claude-sonnet
+    instructions: |
+      You are a senior developer agent. You can:
+      - Read and write files
+      - Execute terminal commands
+      - Search the codebase
+      - Create git commits
+
+      Always explain your actions and ask for confirmation before destructive operations.
+
+    tools:
+      - mcp: "filesystem"
+      - mcp: "github"
+      - mcp: "linear"
+      - builtin: "terminal"
+      - builtin: "codebase"
+
+  - name: "reviewer"
+    model: claude-sonnet
+    instructions: |
+      You are a code review agent. Focus on:
+      - Finding bugs and security issues
+      - Suggesting improvements
+      - Ensuring code quality
+
+      Be constructive and specific in feedback.
+
+    tools:
+      - mcp: "github"
+      - builtin: "diff"
+      - builtin: "codebase"
+
+# ============================================
+# EXPERIMENTAL FEATURES
+# ============================================
+experimental:
+  useChainOfThought: true
+  streamOutput: true
+  parallelToolCalls: true
+  contextCollapsing: true

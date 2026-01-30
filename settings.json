@@ -1,0 +1,93 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/schemas/settings.json",
+  "version": "1.0",
+  "project": {
+    "name": "{{PROJECT_NAME}}",
+    "description": "{{PROJECT_DESCRIPTION}}",
+    "type": "{{PROJECT_TYPE}}"
+  },
+  "preferences": {
+    "codeStyle": {
+      "language": "typescript",
+      "indentation": "spaces",
+      "indentSize": 2,
+      "lineWidth": 100,
+      "quoteStyle": "single",
+      "trailingComma": "es5",
+      "semicolons": true
+    },
+    "git": {
+      "commitMessageFormat": "conventional",
+      "branchNamingPattern": "{{USER}}/{{LINEAR_ID}}-{{DESCRIPTION}}",
+      "defaultBranch": "main",
+      "signCommits": true
+    },
+    "documentation": {
+      "style": "jsdoc",
+      "generateOnChange": true
+    }
+  },
+  "permissions": {
+    "allowedTools": [
+      "Edit",
+      "Read",
+      "Write",
+      "Bash",
+      "Glob",
+      "Grep",
+      "WebSearch"
+    ],
+    "disallowedTools": [],
+    "allowedDirectories": [
+      "src/",
+      "lib/",
+      "tests/",
+      "docs/"
+    ],
+    "restrictedPatterns": [
+      ".env*",
+      "*.key",
+      "*.pem",
+      "**/secrets/**"
+    ]
+  },
+  "integrations": {
+    "linear": {
+      "enabled": true,
+      "teamPrefix": "PAR",
+      "autoLinkIssues": true,
+      "branchFromIssue": true
+    },
+    "notion": {
+      "enabled": true,
+      "specDatabaseId": "{{NOTION_SPEC_DATABASE_ID}}",
+      "wikiPageId": "{{NOTION_WIKI_PAGE_ID}}"
+    },
+    "github": {
+      "autoReview": true,
+      "requireApproval": false,
+      "createDraftPRs": true
+    }
+  },
+  "context": {
+    "includeFiles": [
+      "README.md",
+      "CONTRIBUTING.md",
+      "package.json",
+      "tsconfig.json"
+    ],
+    "excludePatterns": [
+      "node_modules/",
+      "dist/",
+      "build/",
+      ".git/",
+      "coverage/"
+    ],
+    "maxContextFiles": 20
+  },
+  "prompts": {
+    "systemPrompt": "You are an expert software engineer working on {{PROJECT_NAME}}. Follow the project's coding standards, use conventional commits, and ensure all changes are well-documented.",
+    "codeReviewPrompt": "Review this code for: security vulnerabilities, performance issues, code style adherence, and potential bugs. Suggest improvements where applicable.",
+    "prDescriptionPrompt": "Generate a PR description that includes: summary of changes, testing done, linear issue link, and any breaking changes."
+  }
+}
