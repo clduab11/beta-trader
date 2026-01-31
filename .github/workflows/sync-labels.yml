@@ -53,7 +53,7 @@ jobs:
             echo "::error::labels.yml not found at .github/labels.yml"
             exit 1
           fi
-          echo "Found labels.yml with $(grep -c '^- name:' .github/labels.yml) labels"
+          echo "Found labels.yml with $(grep -c "^- name:" .github/labels.yml) labels"
 
       - name: Sync labels (dry run)
         if: ${{ github.event.inputs.dry_run == 'true' }}
@@ -86,5 +86,5 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Labels Applied" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          grep '^- name:' .github/labels.yml | sed 's/- name: //' >> $GITHUB_STEP_SUMMARY
+          grep "^- name:" .github/labels.yml | sed 's/- name: //' >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
