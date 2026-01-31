@@ -1,4 +1,4 @@
-# Golden Repo Template
+# Repo Template
 
 > Parallax Analytics Solo Developer Workflow Template
 
@@ -33,7 +33,7 @@ A maximally configured repository template integrating **Claude Code**, **Gemini
 
 ```bash
 # Clone template
-git clone https://github.com/parallax-analytics/golden-repo-template.git my-project
+git clone https://github.com/clduab11/repo-skeletor.git my-project
 cd my-project
 
 # Run setup script

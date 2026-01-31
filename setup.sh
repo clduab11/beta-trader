@@ -1,5 +1,5 @@
 #!/bin/bash
-# Golden Repo Template Setup Script
+# Repo Template Setup Script
 # Parallax Analytics
 
 set -e
@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 
 echo -e "${BLUE}"
 echo "╔═══════════════════════════════════════════════════╗"
-echo "║     Golden Repo Template Setup                    ║"
+echo "║     Repo Template Setup                           ║"
 echo "║     Parallax Analytics                            ║"
 echo "╚═══════════════════════════════════════════════════╝"
 echo -e "${NC}"
