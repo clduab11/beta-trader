@@ -1,8 +1,19 @@
-# Golden Repo Template
+# repo-skeletor
 
 > Parallax Analytics Solo Developer Workflow Template
 
 A maximally configured repository template integrating **Claude Code**, **Gemini**, **Continue.dev**, **Linear**, **Notion**, and **GitHub Actions** for an autonomous, AI-augmented development workflow.
+
+## 📚 Documentation
+
+**[📖 View Complete Documentation Wiki →](./docs/wiki/Home.md)**
+
+- [Quick Start Guide](./docs/wiki/Quick-Start-Guide.md) - Get started in minutes
+- [Template Structure](./docs/wiki/Template-Structure.md) - Understand the repository
+- [GitHub Actions Architecture](./docs/wiki/GitHub-Actions-Architecture.md) - Workflow details
+- [Secrets & Environment Setup](./docs/wiki/Secrets-and-Environment-Setup.md) - API configuration
+- [Customization Guide](./docs/wiki/Customization-Guide.md) - Adapt to your needs
+- [Linear ↔ Notion Sync](./docs/wiki/Linear-Notion-Sync.md) - Integration setup
 
 ## 🏗️ Structure
 
@@ -135,12 +146,19 @@ Example: `clduab11/PAR-123-add-auth-module`
 - Claude has restricted directory access
 - Destructive operations require confirmation
 
-## 📚 Resources
+## 📚 Documentation & Resources
 
+**Complete Documentation:**
+- **[📖 Full Wiki Documentation](./docs/wiki/Home.md)** - Comprehensive guides and tutorials
+
+**External Resources:**
 - [Claude Code GitHub Actions](https://github.com/anthropics/claude-code-action)
 - [Continue.dev Documentation](https://docs.continue.dev)
 - [Linear API](https://developers.linear.app)
 - [Notion API](https://developers.notion.com)
+
+**Related:**
+- [Linear Issue: REP-3](https://linear.app/parallax-workspace/issue/REP-3) - Documentation initiative
 
 ---
 
