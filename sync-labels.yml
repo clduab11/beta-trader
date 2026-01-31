@@ -23,6 +23,7 @@ on:
     branches: [main, master]
     paths:
       - '.github/labels.yml'
+  create:
   repository_dispatch:
     types: [sync-labels]
 
