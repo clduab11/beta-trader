@@ -1,0 +1,90 @@
+# Label Synchronization Workflow
+# Syncs GitHub labels with Linear taxonomy definition in .github/labels.yml
+#
+# Triggers:
+#   - Manual dispatch (workflow_dispatch)
+#   - Push to .github/labels.yml
+#   - Repository creation (useful for template repos)
+#
+# Required Secrets:
+#   - GITHUB_TOKEN (automatic) or PAT with repo scope for cross-repo sync
+
+name: Sync Labels
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (preview changes without applying)'
+        required: false
+        default: 'false'
+        type: boolean
+  push:
+    branches: [main, master]
+    paths:
+      - '.github/labels.yml'
+  repository_dispatch:
+    types: [sync-labels]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  sync-labels:
+    name: Synchronize Repository Labels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install github-label-sync
+        run: npm install -g github-label-sync
+
+      - name: Validate labels.yml exists
+        run: |
+          if [ ! -f ".github/labels.yml" ]; then
+            echo "::error::labels.yml not found at .github/labels.yml"
+            exit 1
+          fi
+          echo "Found labels.yml with $(grep -c "^- name:" .github/labels.yml) labels"
+
+      - name: Sync labels (dry run)
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        run: |
+          github-label-sync \
+            --access-token ${{ secrets.GITHUB_TOKEN }} \
+            --labels .github/labels.yml \
+            --dry-run \
+            ${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync labels (apply)
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          github-label-sync \
+            --access-token ${{ secrets.GITHUB_TOKEN }} \
+            --labels .github/labels.yml \
+            --allow-added-labels \
+            ${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## Label Sync Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Repository: \`${{ github.repository }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "Labels file: \`.github/labels.yml\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Labels Applied" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          grep "^- name:" .github/labels.yml | sed 's/- name: //' >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,124 @@
+# Parallax Analytics - Unified Label Taxonomy
+# Mirrors Linear workspace labels for cross-platform consistency
+#
+# Usage: Apply via github-label-sync or GitHub Actions workflow
+# Docs: https://github.com/Financial-Times/github-label-sync
+#
+# Install: npm install -g github-label-sync
+# Apply:   github-label-sync --access-token $GITHUB_TOKEN --labels .github/labels.yml <owner>/<repo>
+
+# ============================================================================
+# PRIORITY LABELS
+# Maps to Linear: priority/urgency group
+# ============================================================================
+
+- name: "p0-critical"
+  color: "eb5757"
+  description: "Production-breaking, immediate action required"
+
+- name: "p1-high"
+  color: "f2994a"
+  description: "Significant impact, near-term priority"
+
+- name: "p2-medium"
+  color: "f2c94c"
+  description: "Standard priority work"
+
+- name: "p3-low"
+  color: "5e6ad2"
+  description: "Nice-to-have, future consideration"
+
+- name: "blocked"
+  color: "bec2c8"
+  description: "Cannot proceed without external dependency"
+
+# ============================================================================
+# TYPE LABELS
+# Maps to Linear: type labels (workspace-level)
+# ============================================================================
+
+- name: "enhancement"
+  color: "bec2c8"
+  description: "Improvements to existing features"
+
+- name: "bug"
+  color: "eb5757"
+  description: "Critical issues requiring immediate fixes"
+
+- name: "refactor"
+  color: "26b5ce"
+  description: "Code restructuring without functional changes"
+
+- name: "tech-debt"
+  color: "ad2b32"
+  description: "Deferred improvements that accumulate risk"
+
+- name: "spike"
+  color: "f2c94c"
+  description: "Research/investigation with time-boxed scope"
+
+- name: "feature"
+  color: "bb87fc"
+  description: "New capabilities and/or functionality"
+
+- name: "improvement"
+  color: "4ea7fc"
+  description: "Miscellaneous improvements"
+
+- name: "qol-enhance"
+  color: "5e6ad2"
+  description: "Small bug fixes and general quality-of-life fixes"
+
+# ============================================================================
+# STAGE LABELS
+# Maps to Linear: stage labels (workflow progression)
+# ============================================================================
+
+- name: "stage:ready"
+  color: "0e7a0d"
+  description: "Execution-ready - spec complete, ready for implementation"
+
+- name: "stage:brief"
+  color: "5e6ad2"
+  description: "Epic Brief phase - problem definition and questions"
+
+- name: "stage:prd"
+  color: "f2994a"
+  description: "PRD phase - implementation spec and validation"
+
+- name: "stage:flows"
+  color: "26b5ce"
+  description: "Core Flows phase - UX/flow design and questions"
+
+# ============================================================================
+# META LABELS
+# Maps to Linear: ai-assisted, duplicate
+# ============================================================================
+
+- name: "ai-assisted"
+  color: "1a7f37"
+  description: "Work performed with AI pair programming (Claude, Codex, etc.)"
+
+- name: "duplicate"
+  color: "cfd3d7"
+  description: "This issue or PR already exists"
+
+# ============================================================================
+# GITHUB-SPECIFIC LABELS (not in Linear)
+# ============================================================================
+
+- name: "good-first-issue"
+  color: "7057ff"
+  description: "Good for newcomers"
+
+- name: "help-wanted"
+  color: "008672"
+  description: "Extra attention is needed"
+
+- name: "wontfix"
+  color: "ffffff"
+  description: "This will not be worked on"
+
+- name: "documentation"
+  color: "0075ca"
+  description: "Improvements or additions to documentation"
