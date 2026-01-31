@@ -19,7 +19,7 @@ A maximally configured repository template integrating **Claude Code**, **Gemini
 │       ├── ci.yml             # Continuous Integration
 │       ├── deploy.yml         # Deployment pipeline
 │       ├── linear-to-notion-sync.yml    # Linear → Notion sync
-│       └── notion-spec-to-linear.yml    # Notion spec → Linear issues
+│       └── notion-to-linear-sync.yml    # Notion → Linear sync
 ├── .continue/
 │   ├── config.yaml            # Continue.dev main config
 │   └── mcpServers/
@@ -84,19 +84,32 @@ Mention `@claude` in PR comments or issues:
 Automatically triggered via Linear webhook, or manually:
 
 ```bash
-gh workflow run linear-to-notion-sync.yml -f issue_id=PAR-123
+gh workflow run linear-to-notion-sync.yml -f issue_id=PAR-123 -f sync_type=full
 ```
 
-### Notion Spec → Linear Issues
+**Webhook Setup**:
+1. Go to Linear Settings → API → Webhooks
+2. Create webhook with URL: `https://api.github.com/repos/clduab11/repo-skeletor/dispatches`
+3. Add header: `Authorization: Bearer YOUR_GITHUB_PAT`
+4. Add header: `Accept: application/vnd.github.v3+json`
+5. Set payload: `{"event_type": "linear-webhook", "client_payload": {"issue_id": "{{issue.identifier}}", "action": "{{action}}"}}`
+
+### Notion → Linear Sync
 
 Convert Notion specs to Linear epics with sub-issues:
 
 ```bash
-gh workflow run notion-spec-to-linear.yml \
+gh workflow run notion-to-linear-sync.yml \
   -f notion_page_id=abc123 \
   -f create_epic=true \
   -f linear_project="Q1 Features"
 ```
+
+**Webhook Setup**:
+1. Create Notion integration at https://www.notion.so/my-integrations
+2. Use Notion's webhook API or automation tools (Zapier, n8n) to trigger:
+3. Webhook URL: `https://api.github.com/repos/clduab11/repo-skeletor/dispatches`
+4. Set payload: `{"event_type": "notion-spec-ready", "client_payload": {"notion_page_id": "{{page_id}}"}}`
 
 ## 🤖 Continue.dev Integration
 
