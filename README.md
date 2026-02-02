@@ -1,178 +1,299 @@
-# Repo Template
+# Beta-Trader
 
-> Parallax Analytics Solo Developer Workflow Template
+> **Predictive Betting & Algorithmic Trading Platform**  
+> *NautilusTrader Core • Neural Forecasting • Prediction Markets*
 
-A maximally configured repository template integrating **Claude Code**, **Gemini**, **Continue.dev**, **Linear**, **Notion**, and **GitHub Actions** for an autonomous, AI-augmented development workflow.
-
-## 📚 Documentation
-
-**[📖 View Complete Documentation Wiki →](./docs/wiki/Home.md)**
-
-- [Quick Start Guide](./docs/wiki/Quick-Start-Guide.md) - Get started in minutes
-- [Template Structure](./docs/wiki/Template-Structure.md) - Understand the repository
-- [GitHub Actions Architecture](./docs/wiki/GitHub-Actions-Architecture.md) - Workflow details
-- [Secrets & Environment Setup](./docs/wiki/Secrets-and-Environment-Setup.md) - API configuration
-- [Customization Guide](./docs/wiki/Customization-Guide.md) - Adapt to your needs
-- [Linear ↔ Notion Sync](./docs/wiki/Linear-Notion-Sync.md) - Integration setup
-
-## 🏗️ Structure
-
-```
-.
-├── .claude/
-│   └── settings.json          # Claude Code project settings
-├── .gemini/
-│   ├── config.yaml            # Gemini API configuration
-│   └── styleguide.md          # Project coding standards
-├── .github/
-│   └── workflows/
-│       ├── claude.yml         # Claude Code GitHub Action
-│       ├── ci.yml             # Continuous Integration
-│       ├── deploy.yml         # Deployment pipeline
-│       ├── linear-to-notion-sync.yml    # Linear → Notion sync
-│       └── notion-to-linear-sync.yml    # Notion → Linear sync
-├── .continue/
-│   ├── config.yaml            # Continue.dev main config
-│   └── mcpServers/
-│       └── mcp-servers.yaml   # MCP server definitions
-└── README.md
-```
-
-## 🔧 Setup
-
-### 1. Clone and Configure
-
-```bash
-# Clone template
-git clone https://github.com/clduab11/repo-skeletor.git my-project
-cd my-project
-
-# Run setup script
-./setup.sh
-```
-
-### 2. Required Secrets
-
-Add these secrets to your GitHub repository (Settings → Secrets → Actions):
-
-| Secret | Description |
-|--------|-------------|
-| `ANTHROPIC_API_KEY` | Claude API key |
-| `LINEAR_API_KEY` | Linear API key |
-| `NOTION_API_KEY` | Notion integration token |
-| `LINEAR_TEAM_ID` | Your Linear team ID |
-| `NOTION_SPEC_DATABASE_ID` | Notion database for specs |
-
-### 3. Configure Templates
-
-Replace placeholders in configuration files:
-
-| Placeholder | Replace With |
-|-------------|--------------|
-| `{{PROJECT_NAME}}` | Your project name |
-| `{{PROJECT_DESCRIPTION}}` | Project description |
-| `{{PROJECT_TYPE}}` | `api`, `web`, `cli`, etc. |
-| `{{PROJECT_DOMAIN}}` | Your domain (e.g., `example.com`) |
-| `{{NOTION_SPEC_DATABASE_ID}}` | Notion database ID |
-| `{{NOTION_WIKI_PAGE_ID}}` | Notion wiki page ID |
-
-## 🚀 Workflows
-
-### Claude Code (@claude mentions)
-
-Mention `@claude` in PR comments or issues:
-
-```
-@claude Review this PR for security issues
-
-@claude Can you add error handling to the auth module?
-
-@claude Fix the failing test in user-service.test.ts
-```
-
-### Linear → Notion Sync
-
-Automatically triggered via Linear webhook, or manually:
-
-```bash
-gh workflow run linear-to-notion-sync.yml -f issue_id=PAR-123 -f sync_type=full
-```
-
-**Webhook Setup**:
-1. Go to Linear Settings → API → Webhooks
-2. Create webhook with URL: `https://api.github.com/repos/clduab11/repo-skeletor/dispatches`
-3. Add header: `Authorization: Bearer YOUR_GITHUB_PAT`
-4. Add header: `Accept: application/vnd.github.v3+json`
-5. Set payload: `{"event_type": "linear-webhook", "client_payload": {"issue_id": "{{issue.identifier}}", "action": "{{action}}"}}`
-
-### Notion → Linear Sync
-
-Convert Notion specs to Linear epics with sub-issues:
-
-```bash
-gh workflow run notion-to-linear-sync.yml \
-  -f notion_page_id=abc123 \
-  -f create_epic=true \
-  -f linear_project="Q1 Features"
-```
-
-**Webhook Setup**:
-1. Create Notion integration at https://www.notion.so/my-integrations
-2. Use Notion's webhook API or automation tools (Zapier, n8n) to trigger:
-3. Webhook URL: `https://api.github.com/repos/clduab11/repo-skeletor/dispatches`
-4. Set payload: `{"event_type": "notion-spec-ready", "client_payload": {"notion_page_id": "{{page_id}}"}}`
-
-## 🤖 Continue.dev Integration
-
-### MCP Servers Available
-
-| Server | Description |
-|--------|-------------|
-| `filesystem` | Local file operations |
-| `github` | Repository, PRs, issues |
-| `linear` | Issue tracking |
-| `notion` | Documentation |
-| `web-search` | Research lookup |
-| `memory` | Persistent context (mem0) |
-| `context7` | Library docs |
-
-### Custom Slash Commands
-
-| Command | Description |
-|---------|-------------|
-| `/review` | Code review with styleguide |
-| `/test` | Generate Vitest tests |
-| `/doc` | Generate JSDoc documentation |
-| `/linear` | Create Linear issue from context |
-| `/spec` | Generate Notion spec |
-
-## 📋 Branch Naming
-
-Format: `<user>/<linear-id>-<description>`
-
-Example: `clduab11/PAR-123-add-auth-module`
-
-## 🔐 Security
-
-- Secrets are never committed
-- `.env*` files are gitignored
-- Claude has restricted directory access
-- Destructive operations require confirmation
-
-## 📚 Documentation & Resources
-
-**Complete Documentation:**
-- **[📖 Full Wiki Documentation](./docs/wiki/Home.md)** - Comprehensive guides and tutorials
-
-**External Resources:**
-- [Claude Code GitHub Actions](https://github.com/anthropics/claude-code-action)
-- [Continue.dev Documentation](https://docs.continue.dev)
-- [Linear API](https://developers.linear.app)
-- [Notion API](https://developers.notion.com)
-
-**Related:**
-- [Linear Issue: REP-3](https://linear.app/parallax-workspace/issue/REP-3) - Documentation initiative
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![Rust](https://img.shields.io/badge/rust-1.75+-orange.svg)](https://www.rust-lang.org/)
 
 ---
 
-Built by [Parallax Analytics](https://parallax-analytics.com) 🚀
+## 🎯 Vision
+
+Beta-Trader is an AI-powered predictive trading platform that combines:
+
+- **[NautilusTrader](https://github.com/nautechsystems/nautilus_trader)** — Production-grade execution engine (Rust core + Python)
+- **Neural Forecasting** — Time-series models (LSTM, N-BEATS, TFT, DeepAR) for signal generation
+- **Prediction Markets** — Polymarket & Kalshi adapters for event-driven trading
+- **Intelligent Research** — Multi-source intel pipeline (Exa.ai, Firecrawl, Tavily)
+- **Cost-Optimized LLMs** — OpenRouter free model rotation for research at scale
+
+Built for deployment on **fly.io** with minimal capital (~$100 starting).
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              BETA-TRADER PLATFORM                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   INTEL LAYER          SIGNAL LAYER          ROUTING LAYER                 │
+│   ───────────          ────────────          ─────────────                 │
+│   • Exa.ai      ───▶   • LSTM         ───▶   • WASM (free)                 │
+│   • Firecrawl          • N-BEATS             • Haiku (cheap)               │
+│   • Tavily             • TFT                 • Opus (quality)              │
+│   • Jina.ai            • DeepAR                                            │
+│                                                      │                      │
+│                    ┌─────────────────────────────────▼────────────────┐    │
+│                    │         EXECUTION ENGINE (NautilusTrader)        │    │
+│                    │  • Risk Engine  • Order Management  • Backtest   │    │
+│                    └─────────────────────────────────┬────────────────┘    │
+│                                                      │                      │
+│   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐                   │
+│   │ Binance  │  │  Kraken  │  │Polymarket│  │  Kalshi  │                   │
+│   └──────────┘  └──────────┘  └──────────┘  └──────────┘                   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## ⚡ Features
+
+### Execution Engine
+- **Risk Management** — Position limits, drawdown controls, stop-loss enforcement
+- **Backtest Engine** — Vectorized + event-driven simulation with realistic fills
+- **Multi-Venue** — Unified interface for CEX (Binance/Kraken) and prediction markets
+
+### Neural Forecasting
+- **Neuro-Divergent Models** — LSTM, N-BEATS, TFT, DeepAR, TCN implementations
+- **WASM Inference** — Sub-10ms signal classification via ruv-FANN
+- **Ensemble Orchestration** — Combine multiple models with confidence weighting
+
+### Intelligence Pipeline
+- **Exa.ai** — Neural semantic search ($2.50/1k queries)
+- **Firecrawl** — Deep web scraping for full content extraction
+- **Tavily** — Real-time news and event monitoring ($0.01/search)
+- **Jina.ai** — Embeddings for similarity search (free tier)
+
+### Cost Optimization
+- **3-Tier Routing** — WASM → Haiku → Opus (saves ~75% on LLM costs)
+- **OpenRouter Free Models** — Rotate between 7+ free reasoning models
+- **Redis Caching** — Cache expensive API responses
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.12+
+- Rust 1.75+
+- uv (Python package manager)
+- Redis (local or cloud)
+
+### Installation
+
+```bash
+# Clone repository
+git clone https://github.com/clduab11/beta-trader.git
+cd beta-trader
+
+# Install Python dependencies
+uv sync
+
+# Build Rust core
+cargo build --release
+
+# Copy environment template
+cp .env.example .env
+# Edit .env with your API keys
+```
+
+### Configuration
+
+```bash
+# Required API Keys
+OPENROUTER_API_KEY=      # Free models access
+EXA_API_KEY=             # Intel pipeline
+POLYMARKET_API_KEY=      # Prediction market
+BINANCE_API_KEY=         # Crypto trading
+```
+
+### Run Backtest
+
+```bash
+python scripts/backtest.py \
+  --strategy=polymarket_arb \
+  --period=90d \
+  --capital=100
+```
+
+### Deploy to fly.io
+
+```bash
+fly deploy --app beta-trader
+```
+
+---
+
+## 📁 Project Structure
+
+```
+beta-trader/
+├── AGENTS.md              # Codex agent instructions
+├── README.md              # This file
+├── pyproject.toml         # Python dependencies
+├── Cargo.toml             # Rust workspace
+├── fly.toml               # Deployment config
+│
+├── core/                  # NautilusTrader fork
+│   ├── nautilus_core/     # Rust execution engine
+│   └── nautilus_trader/   # Python trading layer
+│       └── adapters/      # Venue adapters
+│
+├── intel/                 # Intelligence pipeline
+│   ├── orchestrator.py    # Multi-source aggregation
+│   └── sources/           # Exa, Firecrawl, Tavily, Jina
+│
+├── signals/               # Neural forecasting
+│   ├── models/            # LSTM, N-BEATS, TFT, etc.
+│   └── wasm/              # Fast inference
+│
+├── routing/               # Cost-optimized LLM routing
+│   ├── router.py          # 3-tier routing logic
+│   └── openrouter/        # Free model rotation
+│
+├── strategies/            # Trading strategies
+│   ├── polymarket_arb.py
+│   ├── kalshi_event.py
+│   └── crypto_momentum.py
+│
+├── tests/
+└── scripts/
+```
+
+---
+
+## 🤖 OpenRouter Free Models
+
+Rotating between these 128K+ context reasoning models:
+
+| Model | Context | Best For |
+|-------|---------|----------|
+| DeepSeek R1 0528 | 164K | Deep reasoning |
+| NVIDIA Nemotron 3 Nano | 256K | Agentic tasks |
+| GPT-OSS 120B | 131K | Tool use, CoT |
+| Llama 3.3 70B | 131K | General |
+| Qwen3 Coder 480B | 262K | Code generation |
+| Hermes 3 405B | 131K | Complex tasks |
+| GLM-4.5 Air | 131K | Multilingual |
+
+See [AGENTS.md](./AGENTS.md) for rotation implementation.
+
+---
+
+## 📊 Supported Venues
+
+### Crypto Exchanges
+| Exchange | Status | Features |
+|----------|--------|----------|
+| Binance | ✅ Ready | Spot, Futures, WebSocket |
+| Kraken | ✅ Ready | Spot, Margin |
+
+### Prediction Markets
+| Market | Status | Features |
+|--------|--------|----------|
+| Polymarket | 🔨 Building | Event contracts, CLOB |
+| Kalshi | 🔨 Building | Regulated events |
+
+---
+
+## 💰 Cost Breakdown (Monthly Estimate)
+
+| Service | Usage | Cost |
+|---------|-------|------|
+| fly.io (shared-cpu-1x) | 24/7 | ~$5-10 |
+| OpenRouter | Free tier | $0 |
+| Exa.ai | ~500 queries | ~$1.25 |
+| Tavily | ~100 queries | ~$1 |
+| Redis (Upstash) | Free tier | $0 |
+| **Total** | | **~$8-15/mo** |
+
+---
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+pytest tests/unit -v
+
+# Integration tests (requires API keys)
+pytest tests/integration -v --api
+
+# Backtest validation
+pytest tests/backtest -v
+
+# Coverage report
+pytest --cov=. --cov-report=html
+```
+
+---
+
+## 📚 Documentation
+
+- [AGENTS.md](./AGENTS.md) — AI agent instructions (Codex optimized)
+- [docs/architecture.md](./docs/architecture.md) — Detailed system design
+- [docs/adapters.md](./docs/adapters.md) — Venue adapter guide
+- [docs/strategies.md](./docs/strategies.md) — Strategy development
+
+---
+
+## 🛣️ Roadmap
+
+### Phase 1: Foundation ← *Current*
+- [x] Repository structure
+- [x] AGENTS.md for Codex
+- [ ] NautilusTrader fork & strip
+- [ ] Intel pipeline (Exa + Tavily + Firecrawl)
+- [ ] OpenRouter client with rotation
+
+### Phase 2: Neural Layer
+- [ ] LSTM forecaster port
+- [ ] ruv-FANN WASM integration
+- [ ] Model ensemble orchestrator
+
+### Phase 3: Prediction Markets
+- [ ] Polymarket adapter (REST + WS)
+- [ ] Kalshi adapter
+- [ ] Paper trading validation
+
+### Phase 4: Strategies & Deploy
+- [ ] Polymarket arbitrage strategy
+- [ ] Crypto momentum strategy
+- [ ] fly.io deployment
+- [ ] Live trading ($100 capital)
+
+---
+
+## ⚠️ Risk Disclaimer
+
+This software is for **educational and research purposes**. Trading cryptocurrencies and prediction markets involves substantial risk of loss. Never trade with funds you cannot afford to lose. The authors are not responsible for any financial losses incurred.
+
+---
+
+## 🤝 Contributing
+
+This is a personal project by [@clduab11](https://github.com/clduab11). While not accepting external contributions at this time, feel free to fork and adapt for your own use.
+
+---
+
+## 📄 License
+
+MIT License — see [LICENSE](./LICENSE) for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [NautilusTrader](https://github.com/nautechsystems/nautilus_trader) — Execution engine foundation
+- [rUv's Claude-Flow](https://github.com/ruvnet/claude-flow) — Multi-agent orchestration patterns
+- [ruv-FANN](https://github.com/ruvnet/ruv-FANN) — Neural inference & Neuro-Divergent models
+- [OpenRouter](https://openrouter.ai) — Free model access
+
+---
+
+**Status**: 🟡 Active Development  
+**Last Updated**: February 2026

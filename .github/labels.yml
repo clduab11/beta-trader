@@ -6,102 +6,186 @@
 #
 # Install: npm install -g github-label-sync
 # Apply:   github-label-sync --access-token $GITHUB_TOKEN --labels .github/labels.yml <owner>/<repo>
+#
+# Last audited: February 1, 2026
 
 # ============================================================================
-# PRIORITY LABELS
-# Maps to Linear: priority/urgency group
+# AUTOMATION LABELS
+# Maps to Linear: automation group
 # ============================================================================
 
-- name: "p0-critical"
+- name: "auto-deploy"
+  color: "26b5ce"
+  description: "Deployment pipeline issue"
+
+- name: "auto-hook"
+  color: "4ea7fc"
+  description: "Webhook configs/handling issue"
+
+- name: "auto-label"
+  color: "1a7f37"
+  description: "Automated labeling"
+
+- name: "auto-monitor"
+  color: "f2c94c"
+  description: "Monitoring & alerting issues"
+
+- name: "auto-sync"
+  color: "5e6ad2"
+  description: "Cross-platform sync issue"
+
+- name: "auto-workflow"
   color: "eb5757"
-  description: "Production-breaking, immediate action required"
+  description: "GitHub Actions workflow issue"
+
+# ============================================================================
+# PRIORITY LABELS (CADENCE)
+# Maps to Linear: cadence group
+# ============================================================================
+
+- name: "p0-blocker"
+  color: "eb5757"
+  description: "Critical, blocks progress"
 
 - name: "p1-high"
   color: "f2994a"
-  description: "Significant impact, near-term priority"
+  description: "High priority"
 
 - name: "p2-medium"
   color: "f2c94c"
-  description: "Standard priority work"
+  description: "Medium priority"
 
 - name: "p3-low"
   color: "5e6ad2"
-  description: "Nice-to-have, future consideration"
+  description: "Low priority"
 
-- name: "blocked"
-  color: "bec2c8"
-  description: "Cannot proceed without external dependency"
+# ============================================================================
+# DOMAIN LABELS
+# Maps to Linear: domain individual labels
+# ============================================================================
+
+- name: "domain-ai"
+  color: "4ea7fc"
+  description: "Claude-flow, ruv-FANN, neural inference, agents"
+
+- name: "domain-community"
+  color: "1a7f37"
+  description: "Moltbook, OpenClaw ecosystem, social presence"
+
+- name: "domain-infrastructure"
+  color: "5e6ad2"
+  description: "Systemd, networking, security, hardware"
+
+- name: "domain-integration"
+  color: "26b5ce"
+  description: "GitHub, Slack, Notion, Telegram, MCP"
+
+- name: "domain-monitoring"
+  color: "f2994a"
+  description: "Prometheus, Grafana, alerting, health checks"
+
+# ============================================================================
+# SCOPE/SIZE LABELS
+# Maps to Linear: scope group
+# ============================================================================
+
+- name: "size-xs"
+  color: "26b5ce"
+  description: "Trivial change, <1 hr"
+
+- name: "size-s"
+  color: "4ea7fc"
+  description: "Minor change, 1-4 hrs (Small)"
+
+- name: "size-m"
+  color: "f2c94c"
+  description: "Standard change, 1-2 days (Medium)"
+
+- name: "size-l"
+  color: "f2994a"
+  description: "Major work, 3-5 days (Large)"
+
+- name: "size-xl"
+  color: "eb5757"
+  description: "Epic work, 1-2 weeks"
+
+- name: "size-unk"
+  color: "5e6ad2"
+  description: "Pending, needs investigation"
+
+# ============================================================================
+# SPECIAL/META LABELS
+# Maps to Linear: special group
+# ============================================================================
+
+- name: "blocked-ext"
+  color: "f2994a"
+  description: "Blocked by 3P/vendor"
+
+- name: "blocked-int"
+  color: "26b5ce"
+  description: "Blocked by other internal work"
+
+- name: "breaking-change"
+  color: "eb5757"
+  description: "API/behavior changes"
+
+- name: "tech-debt"
+  color: "f2c94c"
+  description: "Refactoring needed"
 
 # ============================================================================
 # TYPE LABELS
-# Maps to Linear: type labels (workspace-level)
+# Maps to Linear: type group (workspace-level)
 # ============================================================================
-
-- name: "enhancement"
-  color: "bec2c8"
-  description: "Improvements to existing features"
 
 - name: "bug"
   color: "eb5757"
-  description: "Critical issues requiring immediate fixes"
+  description: "Something isn't working"
 
-- name: "refactor"
+- name: "documentation"
+  color: "4ea7fc"
+  description: "Documentation changes"
+
+- name: "enhancement"
   color: "26b5ce"
-  description: "Code restructuring without functional changes"
-
-- name: "tech-debt"
-  color: "ad2b32"
-  description: "Deferred improvements that accumulate risk"
-
-- name: "spike"
-  color: "f2c94c"
-  description: "Research/investigation with time-boxed scope"
+  description: "New feature or improvement"
 
 - name: "feature"
-  color: "bb87fc"
-  description: "New capabilities and/or functionality"
-
-- name: "improvement"
-  color: "4ea7fc"
-  description: "Miscellaneous improvements"
-
-- name: "qol-enhance"
-  color: "5e6ad2"
-  description: "Small bug fixes and general quality-of-life fixes"
-
-# ============================================================================
-# STAGE LABELS
-# Maps to Linear: stage labels (workflow progression)
-# ============================================================================
-
-- name: "stage:ready"
-  color: "0e7a0d"
-  description: "Execution-ready - spec complete, ready for implementation"
-
-- name: "stage:brief"
-  color: "5e6ad2"
-  description: "Epic Brief phase - problem definition and questions"
-
-- name: "stage:prd"
-  color: "f2994a"
-  description: "PRD phase - implementation spec and validation"
-
-- name: "stage:flows"
-  color: "26b5ce"
-  description: "Core Flows phase - UX/flow design and questions"
-
-# ============================================================================
-# META LABELS
-# Maps to Linear: ai-assisted, duplicate
-# ============================================================================
-
-- name: "ai-assisted"
   color: "1a7f37"
-  description: "Work performed with AI pair programming (Claude, Codex, etc.)"
+  description: "Improved capabilities and/or functionalities"
 
-- name: "duplicate"
-  color: "cfd3d7"
-  description: "This issue or PR already exists"
+- name: "infra"
+  color: "5e6ad2"
+  description: "DevOps, CI/CD, tooling, infrastructure"
+
+- name: "performance"
+  color: "5e6ad2"
+  description: "Performance optimization & profiling"
+
+- name: "qol-imp"
+  color: "4ea7fc"
+  description: "Small bug fixes/improvements, misc changes"
+
+- name: "refactor"
+  color: "f2c94c"
+  description: "Code restructuring w/o functional change"
+
+- name: "security"
+  color: "f2994a"
+  description: "Security issues"
+
+- name: "spike"
+  color: "5e6ad2"
+  description: "Research/investigation needed"
+
+- name: "type-personality"
+  color: "eb5757"
+  description: "Agent behavior, neutrality tuning, curiosity engine"
+
+- name: "type-social"
+  color: "5e6ad2"
+  description: "Moltbook and community integration tasks"
 
 # ============================================================================
 # GITHUB-SPECIFIC LABELS (not in Linear)
@@ -118,7 +202,3 @@
 - name: "wontfix"
   color: "ffffff"
   description: "This will not be worked on"
-
-- name: "documentation"
-  color: "0075ca"
-  description: "Improvements or additions to documentation"
