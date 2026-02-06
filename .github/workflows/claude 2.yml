@@ -1,0 +1,113 @@
+# Claude Code GitHub Action
+# Reference: https://github.com/anthropics/claude-code-action
+# Triggers on @claude mentions, issue assignments, and PR reviews
+
+name: Claude Assistant
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned, labeled]
+  pull_request_review:
+    types: [submitted]
+  pull_request:
+    types: [opened, synchronize]
+
+# Prevent concurrent runs on the same PR/issue
+concurrency:
+  group: claude-${{ github.event.pull_request.number || github.event.issue.number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  claude-response:
+    runs-on: ubuntu-latest
+    # Only run if triggered by @claude mention, assignment, or label
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'issues' && github.event.action == 'assigned' && github.event.assignee.login == 'claude[bot]') ||
+      (github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'claude') ||
+      (github.event_name == 'pull_request_review') ||
+      (github.event_name == 'pull_request')
+
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code Action
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+          # Trigger configuration
+          trigger_phrase: "@claude"
+          assignee_trigger: "claude"
+          label_trigger: "claude"
+
+          # Branch configuration (matches Linear integration pattern)
+          branch_prefix: "${{ github.actor }}/"
+          base_branch: "main"
+
+          # PR behavior
+          use_sticky_comment: true
+          include_fix_links: true
+
+          # Claude CLI arguments
+          claude_args: |
+            --max-turns 15
+            --model claude-sonnet-4-20250514
+            --allowedTools Edit,Read,Write,Bash,Glob,Grep,WebSearch
+
+          # Settings file reference
+          settings: ".claude/settings.json"
+
+          # Allow common automation bots to trigger
+          allowed_bots: "dependabot[bot],renovate[bot],github-actions[bot]"
+
+  # Automated PR review on open/sync
+  claude-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review this PR for:
+            1. Code quality and adherence to .gemini/styleguide.md
+            2. Security vulnerabilities
+            3. Performance implications
+            4. Test coverage
+            5. Documentation completeness
+
+            Provide actionable feedback with specific line references.
+            If the code looks good, approve with a brief summary.
+
+          claude_args: |
+            --max-turns 10
+            --model claude-sonnet-4-20250514
+
+          use_sticky_comment: true
+          include_fix_links: true

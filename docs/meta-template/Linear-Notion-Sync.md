@@ -55,6 +55,7 @@ Automatically sync Linear issues to a Notion database.
 | Due Date | Date | Due date |
 | Estimate | Number | Story points/estimate |
 | Project | Rich Text | Project name |
+| Labels | Multi-select | Unified labels (see Labels-and-Sync-Strategy.md) |
 | Linear URL | URL | Link to Linear issue |
 | Last Synced | Date | Last sync timestamp |
 

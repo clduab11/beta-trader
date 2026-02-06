@@ -1,201 +1,82 @@
-# Continuous Integration Pipeline
-# Runs on all PRs and pushes to main
+# CI: Beta-Trader
+# ------------------------------------------------------------------
+# Validates Rust (Core) and Python (Strategies/Intel)
+# Runs on every Push and PR to Main
 
 name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ "main" ]
   pull_request:
-    branches: [main, develop]
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+    branches: [ "main" ]
 
 env:
-  NODE_VERSION: "20"
-  PNPM_VERSION: "9"
+  CARGO_TERM_COLOR: always
+  uv_VERSION: "0.5.21" # Pin uv version for reproducibility
 
 jobs:
-  # Lint and type check
-  lint:
-    name: Lint & Type Check
+  # ------------------------------------------------
+  # RUST CORE
+  # ------------------------------------------------
+  test-rust:
+    name: Test Rust Core
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
-          version: ${{ env.PNPM_VERSION }}
+          components: clippy, rustfmt
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Cache Cargo Registry
+        uses: actions/cache@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Check Formatting
+        run: cargo fmt --all -- --check
 
-      - name: Run ESLint
-        run: pnpm lint
+      - name: Clippy Linting
+        run: cargo clippy -- -D warnings
 
-      - name: Run TypeScript type check
-        run: pnpm typecheck
+      - name: Run Tests
+        run: cargo test --verbose
 
-      - name: Run Prettier check
-        run: pnpm format:check
-
-  # Unit tests
-  test:
-    name: Unit Tests
+  # ------------------------------------------------
+  # PYTHON LAYER
+  # ------------------------------------------------
+  test-python:
+    name: Test Python Layer
     runs-on: ubuntu-latest
-    needs: lint
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          version: ${{ env.PNPM_VERSION }}
+            version: ${{ env.uv_VERSION }}
+            enable-cache: true
+            cache-dependency-glob: "uv.lock"
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
+      - name: Set up Python
+        run: uv python install 3.12
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install Dependencies
+        run: uv sync --all-extras --dev
 
-      - name: Run unit tests
-        run: pnpm test:unit --coverage
+      - name: Lint (Ruff)
+        run: uv run ruff check .
 
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info
-          fail_ci_if_error: false
+      - name: Format Check (Black/Ruff)
+        run: uv run ruff format --check .
 
-  # Build verification
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: lint
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build
-        run: pnpm build
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-output
-          path: dist/
-          retention-days: 7
-
-  # Integration tests (only on main branch or when labeled)
-  integration:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    needs: [test, build]
-    if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'run-integration')
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run integration tests
-        run: pnpm test:integration
-        env:
-          # Add any required test environment variables
-          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
-
-  # Security audit
-  security:
-    name: Security Audit
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run pnpm audit
-        run: pnpm audit --audit-level=high
-        continue-on-error: true
-
-      - name: Run Snyk security scan
-        uses: snyk/actions/node@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
-  # Final status check for branch protection
-  ci-success:
-    name: CI Success
-    runs-on: ubuntu-latest
-    needs: [lint, test, build]
-    if: always()
-
-    steps:
-      - name: Check all jobs passed
-        run: |
-          if [[ "${{ needs.lint.result }}" != "success" ]] || \
-             [[ "${{ needs.test.result }}" != "success" ]] || \
-             [[ "${{ needs.build.result }}" != "success" ]]; then
-            echo "One or more required jobs failed"
-            exit 1
-          fi
-          echo "All required jobs passed!"
+      - name: Run Tests (Pytest)
+        run: uv run pytest tests/

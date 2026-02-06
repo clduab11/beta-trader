@@ -1,6 +1,8 @@
 # Linear to Notion Sync
-# Syncs Linear issue updates to corresponding Notion database entries
-# Triggered via webhook from Linear or manual dispatch
+# ------------------------------------------------------------------
+# Trigger: Linear Webhook
+# Purpose: Updates Notion Database Status when Linear Issue Status changes
+# Source of Truth: Notion (Status View reflects Execution State)
 
 name: Linear to Notion Sync
 
@@ -158,6 +160,9 @@ jobs:
               },
               'Assignee': {
                 rich_text: [{ text: { content: issueData.assignee } }]
+              },
+              'Labels': {
+                multi_select: issueData.labels.map(l => ({ name: l }))
               },
               'Linear URL': {
                 url: issueData.url

@@ -1,41 +1,35 @@
-# Notion Spec to Linear Issues
-# Converts Notion spec documents into Linear issues with proper structure
-# Traycer-style workflow: Spec → Epic → Sub-issues
+# Notion Spec to Linear Sync
+# ------------------------------------------------------------------
+# Trigger: Manual or Repository Dispatch (from Notion Webhook)
+# Purpose: Converts a finalized Notion Spec -> Linear Epic + Issues
+# Source of Truth: Notion (Spec)
+# Execution: Linear (Tickets)
 
 name: Notion Spec to Linear
 
 on:
   repository_dispatch:
-    types: [notion-spec-ready]
+    types: [notion-spec-finalized]
   workflow_dispatch:
     inputs:
       notion_page_id:
-        description: "Notion Page ID containing the spec"
+        description: "Notion Page ID of the Spec"
         required: true
         type: string
-      create_epic:
-        description: "Create as Epic with sub-issues"
+      linear_team_key:
+        description: "Linear Team Key (e.g. PAR)"
         required: true
-        type: boolean
-        default: true
-      linear_project:
-        description: "Linear Project name (optional)"
-        required: false
+        default: "PAR"
         type: string
 
 env:
   LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
   NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
-  LINEAR_TEAM_ID: ${{ secrets.LINEAR_TEAM_ID }}
 
 jobs:
-  parse-spec:
-    name: Parse Notion Spec
+  sync:
+    name: Sync Spec to Linear
     runs-on: ubuntu-latest
-    outputs:
-      spec_data: ${{ steps.parse.outputs.spec_data }}
-      tasks: ${{ steps.parse.outputs.tasks }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,284 +40,59 @@ jobs:
           node-version: "20"
 
       - name: Install dependencies
-        run: npm install @notionhq/client
+        run: npm install @notionhq/client @linear/sdk
 
-      - name: Parse Notion Spec
-        id: parse
+      - name: Parse Spec and Create Issues
         uses: actions/github-script@v7
         with:
           script: |
             const { Client } = require('@notionhq/client');
-            const notion = new Client({ auth: process.env.NOTION_API_KEY });
-
-            const pageId = '${{ github.event.inputs.notion_page_id || github.event.client_payload.notion_page_id }}';
-
-            // Fetch page properties
-            const page = await notion.pages.retrieve({ page_id: pageId });
-
-            // Extract title
-            let title = 'Untitled Spec';
-            if (page.properties.Name?.title?.[0]?.plain_text) {
-              title = page.properties.Name.title[0].plain_text;
-            } else if (page.properties.title?.title?.[0]?.plain_text) {
-              title = page.properties.title.title[0].plain_text;
-            }
-
-            // Fetch page content blocks
-            const blocks = await notion.blocks.children.list({ block_id: pageId });
-
-            // Parse content to extract tasks
-            const tasks = [];
-            let currentSection = '';
-            let description = '';
-
-            for (const block of blocks.nodes || blocks.results) {
-              if (block.type === 'heading_1' || block.type === 'heading_2') {
-                const text = block[block.type]?.rich_text?.[0]?.plain_text || '';
-                currentSection = text;
-              }
-
-              if (block.type === 'paragraph') {
-                const text = block.paragraph?.rich_text?.map(t => t.plain_text).join('') || '';
-                description += text + '\n';
-              }
-
-              // Extract tasks from todo items or bulleted lists with "- [ ]" pattern
-              if (block.type === 'to_do') {
-                const text = block.to_do?.rich_text?.map(t => t.plain_text).join('') || '';
-                if (text) {
-                  tasks.push({
-                    title: text,
-                    section: currentSection,
-                    completed: block.to_do?.checked || false
-                  });
-                }
-              }
-
-              // Also check bulleted lists for task patterns
-              if (block.type === 'bulleted_list_item') {
-                const text = block.bulleted_list_item?.rich_text?.map(t => t.plain_text).join('') || '';
-                // Match patterns like "[ ] Task" or "Task (estimate: 2h)"
-                const taskMatch = text.match(/^\[?\s?\]?\s*(.+?)(?:\s*\(estimate:\s*(\d+)h?\))?$/i);
-                if (taskMatch && text.length > 3) {
-                  tasks.push({
-                    title: taskMatch[1].trim(),
-                    section: currentSection,
-                    estimate: taskMatch[2] ? parseInt(taskMatch[2]) : null
-                  });
-                }
-              }
-            }
-
-            const specData = {
-              pageId,
-              title,
-              description: description.substring(0, 4000),
-              url: page.url,
-              createdTime: page.created_time,
-              lastEditedTime: page.last_edited_time
-            };
-
-            core.setOutput('spec_data', JSON.stringify(specData));
-            core.setOutput('tasks', JSON.stringify(tasks));
-            console.log(`Parsed spec: ${title} with ${tasks.length} tasks`);
-
-  create-issues:
-    name: Create Linear Issues
-    runs-on: ubuntu-latest
-    needs: parse-spec
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install dependencies
-        run: npm install @linear/sdk
-
-      - name: Create Linear Epic and Issues
-        id: create
-        uses: actions/github-script@v7
-        with:
-          script: |
             const { LinearClient } = require('@linear/sdk');
-            const linear = new LinearClient({ apiKey: process.env.LINEAR_API_KEY });
-
-            const specData = JSON.parse('${{ needs.parse-spec.outputs.spec_data }}'.replace(/'/g, "\\'"));
-            const tasks = JSON.parse('${{ needs.parse-spec.outputs.tasks }}'.replace(/'/g, "\\'"));
-            const createEpic = '${{ github.event.inputs.create_epic || 'true' }}' === 'true';
-            const linearProject = '${{ github.event.inputs.linear_project }}';
-
-            const teamId = process.env.LINEAR_TEAM_ID;
-
-            // Get team for label and state IDs
-            const team = await linear.team(teamId);
-            const states = await team.states();
-            const backlogState = states.nodes.find(s => s.name.toLowerCase() === 'backlog');
-
-            // Find or create project if specified
-            let projectId = null;
-            if (linearProject) {
-              const projects = await team.projects();
-              const existing = projects.nodes.find(p =>
-                p.name.toLowerCase() === linearProject.toLowerCase()
-              );
-              projectId = existing?.id;
-            }
-
-            const createdIssues = [];
-            let parentIssue = null;
-
-            if (createEpic && tasks.length > 0) {
-              // Create parent epic issue
-              const epicDescription = `
-            ## Spec Overview
-
-            ${specData.description}
-
-            ---
-
-            **Source:** [Notion Spec](${specData.url})
-            **Created:** ${new Date(specData.createdTime).toLocaleDateString()}
-            **Sub-tasks:** ${tasks.length}
-              `.trim();
-
-              const epicResult = await linear.createIssue({
-                teamId,
-                title: `[Spec] ${specData.title}`,
-                description: epicDescription,
-                stateId: backlogState?.id,
-                projectId,
-                priority: 2 // High priority for specs
-              });
-
-              parentIssue = await epicResult.issue;
-              createdIssues.push({
-                type: 'epic',
-                id: parentIssue.identifier,
-                title: parentIssue.title,
-                url: parentIssue.url
-              });
-
-              console.log(`Created epic: ${parentIssue.identifier}`);
-
-              // Create sub-issues
-              for (const task of tasks) {
-                const taskDescription = `
-            Part of spec: **${specData.title}**
-            Section: ${task.section || 'General'}
-
-            ---
-
-            [View full spec](${specData.url})
-                `.trim();
-
-                const issueResult = await linear.createIssue({
-                  teamId,
-                  title: task.title,
-                  description: taskDescription,
-                  stateId: backlogState?.id,
-                  projectId,
-                  parentId: parentIssue.id,
-                  estimate: task.estimate
-                });
-
-                const issue = await issueResult.issue;
-                createdIssues.push({
-                  type: 'sub-issue',
-                  id: issue.identifier,
-                  title: issue.title,
-                  url: issue.url
-                });
-
-                console.log(`Created sub-issue: ${issue.identifier}`);
-              }
-            } else {
-              // Create single issue
-              const issueResult = await linear.createIssue({
-                teamId,
-                title: specData.title,
-                description: specData.description,
-                stateId: backlogState?.id,
-                projectId
-              });
-
-              const issue = await issueResult.issue;
-              createdIssues.push({
-                type: 'issue',
-                id: issue.identifier,
-                title: issue.title,
-                url: issue.url
-              });
-            }
-
-            core.setOutput('created_issues', JSON.stringify(createdIssues));
-            core.setOutput('epic_id', parentIssue?.identifier || '');
-
-      - name: Update Notion Page with Linear Links
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { Client } = require('@notionhq/client');
+            
             const notion = new Client({ auth: process.env.NOTION_API_KEY });
+            const linear = new LinearClient({ apiKey: process.env.LINEAR_API_KEY });
+            
+            const pageId = context.payload.inputs ? context.payload.inputs.notion_page_id : context.payload.client_payload.notion_page_id;
+            const teamKey = context.payload.inputs ? context.payload.inputs.linear_team_key : "PAR";
 
-            const specData = JSON.parse('${{ needs.parse-spec.outputs.spec_data }}'.replace(/'/g, "\\'"));
-            const createdIssues = JSON.parse('${{ steps.create.outputs.created_issues }}'.replace(/'/g, "\\'"));
+            if (!pageId) throw new Error("No Notion Page ID provided");
 
-            const epic = createdIssues.find(i => i.type === 'epic') || createdIssues[0];
+            // 1. Fetch Notion Page (Title)
+            const page = await notion.pages.retrieve({ page_id: pageId });
+            const title = page.properties.Name?.title?.[0]?.plain_text || "Untitled Spec";
+            const url = page.url;
 
-            if (epic) {
-              // Update Notion page with Linear epic link
-              await notion.pages.update({
-                page_id: specData.pageId,
-                properties: {
-                  'Linear Epic': {
-                    url: epic.url
-                  },
-                  'Linear ID': {
-                    rich_text: [{ text: { content: epic.id } }]
-                  },
-                  'Status': {
-                    select: { name: 'In Linear' }
-                  }
-                }
-              });
+            console.log(`Processing Spec: ${title}`);
 
-              // Add a callout block at the top with Linear link
-              await notion.blocks.children.append({
-                block_id: specData.pageId,
-                children: [
-                  {
-                    object: 'block',
-                    type: 'callout',
-                    callout: {
-                      icon: { emoji: '🔗' },
-                      rich_text: [
-                        { text: { content: 'Linear Epic: ' } },
-                        {
-                          text: { content: epic.id, link: { url: epic.url } },
-                          annotations: { bold: true }
-                        },
-                        { text: { content: ` (${createdIssues.length} issues created)` } }
-                      ]
-                    }
-                  }
-                ]
-              });
+            // 2. Fetch Team
+            const teams = await linear.teams({ filter: { key: { eq: teamKey } } });
+            const team = teams.nodes[0];
+            if (!team) throw new Error(`Team ${teamKey} not found`);
 
-              console.log(`Updated Notion page with Linear link: ${epic.id}`);
+            // 3. Create Epic
+            const epic = await linear.createEpic({
+              name: title,
+              description: `Spec Source: ${url}`,
+              teamId: team.id
+            });
+            const epicId = (await epic.epic).id;
+            console.log(`Created Epic: ${title} (${epicId})`);
+
+            // 4. Fetch Blocks (Tasks)
+            const blocks = await notion.blocks.children.list({ block_id: pageId });
+            
+            // Simple logic: Find non-checked To-do blocks
+            for (const block of blocks.results) {
+              if (block.type === 'to_do' && !block.to_do.checked) {
+                const taskTitle = block.to_do.rich_text.map(t => t.plain_text).join('');
+                if (!taskTitle) continue;
+
+                await linear.createIssue({
+                  teamId: team.id,
+                  title: taskTitle,
+                  description: `From Notion Spec: ${url}`,
+                  epicId: epicId
+                });
+                console.log(`- Created Issue: ${taskTitle}`);
+              }
             }
-
-      - name: Post Summary
-        if: always()
-        run: |
-          echo "## Spec to Linear Complete" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Created Issues" >> $GITHUB_STEP_SUMMARY
-          echo '```json' >> $GITHUB_STEP_SUMMARY
-          echo '${{ steps.create.outputs.created_issues }}' >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY

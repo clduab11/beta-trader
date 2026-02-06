@@ -1,8 +1,8 @@
-# Notion to Linear Sync
+# Notion Spec to Linear Issues
 # Converts Notion spec documents into Linear issues with proper structure
 # Traycer-style workflow: Spec → Epic → Sub-issues
 
-name: Notion to Linear Sync
+name: Notion Spec to Linear
 
 on:
   repository_dispatch:

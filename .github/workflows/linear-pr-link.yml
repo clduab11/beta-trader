@@ -1,0 +1,36 @@
+# Linear to GitHub PR Linker
+# ------------------------------------------------------------------
+# Trigger: PR Opened / Edited
+# Purpose: Enforces Linear Issue ID in branch name and links PR to Linear
+# Best Practice: Branch format should be "feature/team-123-description"
+
+name: Linear PR Link
+
+on:
+  pull_request:
+    types: [opened, edited, reopen, synchronize]
+
+jobs:
+  validate-branch:
+    name: Validate Branch Name
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Branch Name Format
+        uses: action-in/match-branch-name-action@v1
+        with:
+          # Expect: feature/PAR-123-some-text OR fix/PAR-123...
+          regex: '^(feature|fix|chore|docs|refactor)\/[A-Z]+-\d+.*$'
+          allowed_prefixes: 'feature,fix,chore,docs,refactor'
+          ignore_branches: 'main,develop,staging'
+  
+  link-linear:
+    name: Link to Linear
+    runs-on: ubuntu-latest
+    needs: validate-branch
+    steps:
+      - name: Link Linear Issue
+        uses: ctriolo/action-linear-pr-link@v0.1
+        with:
+          linear-api-key: ${{ secrets.LINEAR_API_KEY }}
+          # This action searches the branch name for issue IDs (e.g. PAR-123)
+          # and updates the PR description with a link.

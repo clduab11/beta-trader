@@ -1,204 +1,125 @@
-# Parallax Analytics - Unified Label Taxonomy
-# Mirrors Linear workspace labels for cross-platform consistency
-#
-# Usage: Apply via github-label-sync or GitHub Actions workflow
-# Docs: https://github.com/Financial-Times/github-label-sync
-#
-# Install: npm install -g github-label-sync
-# Apply:   github-label-sync --access-token $GITHUB_TOKEN --labels .github/labels.yml <owner>/<repo>
-#
-# Last audited: February 1, 2026
+# Core Labels for Beta-Trader
+# Source of Truth: Notion <-> Linear <-> GitHub Alignment
 
-# ============================================================================
-# AUTOMATION LABELS
-# Maps to Linear: automation group
-# ============================================================================
-
+# --- Automation Group ---
 - name: "auto-deploy"
-  color: "26b5ce"
-  description: "Deployment pipeline issue"
-
+  color: "c5def5"
+  description: "Triggered by automated deployment pipelines"
 - name: "auto-hook"
-  color: "4ea7fc"
-  description: "Webhook configs/handling issue"
-
+  color: "c5def5"
+  description: "Related to webhook automation"
 - name: "auto-label"
-  color: "1a7f37"
-  description: "Automated labeling"
-
+  color: "c5def5"
+  description: "Applied by label automation bots"
 - name: "auto-monitor"
-  color: "f2c94c"
-  description: "Monitoring & alerting issues"
-
+  color: "c5def5"
+  description: "Related to monitoring automation"
 - name: "auto-sync"
-  color: "5e6ad2"
-  description: "Cross-platform sync issue"
-
+  color: "c5def5"
+  description: "Related to sync automation"
 - name: "auto-workflow"
-  color: "eb5757"
-  description: "GitHub Actions workflow issue"
+  color: "c5def5"
+  description: "Related to GitHub Actions workflows"
 
-# ============================================================================
-# PRIORITY LABELS (CADENCE)
-# Maps to Linear: cadence group
-# ============================================================================
-
+# --- Cadence (Priority) Group ---
 - name: "p0-blocker"
-  color: "eb5757"
-  description: "Critical, blocks progress"
-
+  color: "b60205"
+  description: "Urgent problem blocking development or release"
 - name: "p1-high"
-  color: "f2994a"
-  description: "High priority"
-
+  color: "d93f0b"
+  description: "High priority, next release included"
 - name: "p2-medium"
-  color: "f2c94c"
-  description: "Medium priority"
-
+  color: "fbca04"
+  description: "Medium priority, normal scheduling"
 - name: "p3-low"
-  color: "5e6ad2"
-  description: "Low priority"
+  color: "fef2c0"
+  description: "Low priority, nice to have"
 
-# ============================================================================
-# DOMAIN LABELS
-# Maps to Linear: domain individual labels
-# ============================================================================
+# --- Domain Group ---
+- name: "domain/ai"
+  color: "5319e7"
+  description: "AI, ML, and LLM specific components"
+- name: "domain/community"
+  color: "5319e7"
+  description: "Community facing features and docs"
+- name: "domain/infrastructure"
+  color: "5319e7"
+  description: "DevOps, Cloud, and Hardware infra"
+- name: "domain/integration"
+  color: "5319e7"
+  description: "External API and service integrations"
+- name: "domain/monitoring"
+  color: "5319e7"
+  description: "Observability and logging"
 
-- name: "domain-ai"
-  color: "4ea7fc"
-  description: "Claude-flow, ruv-FANN, neural inference, agents"
-
-- name: "domain-community"
-  color: "1a7f37"
-  description: "Moltbook, OpenClaw ecosystem, social presence"
-
-- name: "domain-infrastructure"
-  color: "5e6ad2"
-  description: "Systemd, networking, security, hardware"
-
-- name: "domain-integration"
-  color: "26b5ce"
-  description: "GitHub, Slack, Notion, Telegram, MCP"
-
-- name: "domain-monitoring"
-  color: "f2994a"
-  description: "Prometheus, Grafana, alerting, health checks"
-
-# ============================================================================
-# SCOPE/SIZE LABELS
-# Maps to Linear: scope group
-# ============================================================================
-
+# --- Scope (Size) Group ---
 - name: "size-xs"
-  color: "26b5ce"
-  description: "Trivial change, <1 hr"
-
+  color: "0e8a16"
+  description: "Extra Small size"
 - name: "size-s"
-  color: "4ea7fc"
-  description: "Minor change, 1-4 hrs (Small)"
-
+  color: "0e8a16"
+  description: "Small size"
 - name: "size-m"
-  color: "f2c94c"
-  description: "Standard change, 1-2 days (Medium)"
-
+  color: "0e8a16"
+  description: "Medium size"
 - name: "size-l"
-  color: "f2994a"
-  description: "Major work, 3-5 days (Large)"
-
+  color: "0e8a16"
+  description: "Large size"
 - name: "size-xl"
-  color: "eb5757"
-  description: "Epic work, 1-2 weeks"
-
+  color: "0e8a16"
+  description: "Extra Large size"
 - name: "size-unk"
-  color: "5e6ad2"
-  description: "Pending, needs investigation"
+  color: "d4c5f9"
+  description: "Size unknown or TBD"
 
-# ============================================================================
-# SPECIAL/META LABELS
-# Maps to Linear: special group
-# ============================================================================
-
+# --- Special Group ---
 - name: "blocked-ext"
-  color: "f2994a"
-  description: "Blocked by 3P/vendor"
-
+  color: "000000"
+  description: "Blocked by external dependency"
 - name: "blocked-int"
-  color: "26b5ce"
-  description: "Blocked by other internal work"
-
+  color: "000000"
+  description: "Blocked by internal dependency"
 - name: "breaking-change"
-  color: "eb5757"
-  description: "API/behavior changes"
-
+  color: "b60205"
+  description: "Introduces breaking changes"
 - name: "tech-debt"
-  color: "f2c94c"
-  description: "Refactoring needed"
+  color: "a2eeef"
+  description: "Technical debt cleanup"
 
-# ============================================================================
-# TYPE LABELS
-# Maps to Linear: type group (workspace-level)
-# ============================================================================
-
+# --- Type Group ---
 - name: "bug"
-  color: "eb5757"
+  color: "d73a4a"
   description: "Something isn't working"
-
 - name: "documentation"
-  color: "4ea7fc"
-  description: "Documentation changes"
-
+  color: "0075ca"
+  description: "Improvements or additions to documentation"
 - name: "enhancement"
-  color: "26b5ce"
-  description: "New feature or improvement"
-
+  color: "a2eeef"
+  description: "New feature or request"
 - name: "feature"
-  color: "1a7f37"
-  description: "Improved capabilities and/or functionalities"
-
+  color: "a2eeef"
+  description: "New feature functionality"
 - name: "infra"
-  color: "5e6ad2"
-  description: "DevOps, CI/CD, tooling, infrastructure"
-
+  color: "c5def5"
+  description: "Infrastructure related changes"
 - name: "performance"
-  color: "5e6ad2"
-  description: "Performance optimization & profiling"
-
+  color: "ffcfc9"
+  description: "Performance Optimization"
+- name: "personality"
+  color: "d4c5f9"
+  description: "Enhancements to AI personality/voice"
 - name: "qol-imp"
-  color: "4ea7fc"
-  description: "Small bug fixes/improvements, misc changes"
-
+  color: "c2e0c6"
+  description: "Quality of Life improvements"
 - name: "refactor"
-  color: "f2c94c"
-  description: "Code restructuring w/o functional change"
-
+  color: "ffcfc9"
+  description: "Code refactoring without behavior change"
 - name: "security"
-  color: "f2994a"
-  description: "Security issues"
-
+  color: "aaaaaa"
+  description: "Security fixes and improvements"
+- name: "social"
+  color: "f9d0c4"
+  description: "Social features"
 - name: "spike"
-  color: "5e6ad2"
-  description: "Research/investigation needed"
-
-- name: "type-personality"
-  color: "eb5757"
-  description: "Agent behavior, neutrality tuning, curiosity engine"
-
-- name: "type-social"
-  color: "5e6ad2"
-  description: "Moltbook and community integration tasks"
-
-# ============================================================================
-# GITHUB-SPECIFIC LABELS (not in Linear)
-# ============================================================================
-
-- name: "good-first-issue"
-  color: "7057ff"
-  description: "Good for newcomers"
-
-- name: "help-wanted"
-  color: "008672"
-  description: "Extra attention is needed"
-
-- name: "wontfix"
-  color: "ffffff"
-  description: "This will not be worked on"
+  color: "f9d0c4"
+  description: "Research or investigation task"
