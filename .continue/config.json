@@ -1,0 +1,26 @@
+{
+  "models": {
+    "default": "openrouter/anthropic/claude-3.5-sonnet"
+  },
+  "contextProviders": [
+    {
+      "name": "file",
+      "params": {
+        "include": ["AGENTS.md", "docs/**/*.md"]
+      }
+    }
+  ],
+  "customCommands": [
+    {
+      "name": "read-workflow",
+      "description": "Read AGENTS.md for project workflow and architecture",
+      "prompt": "Read AGENTS.md completely before starting any task. This file contains the authoritative project structure, workflow, and agent instructions."
+    }
+  ],
+  "rules": [
+    "Always read AGENTS.md before starting implementation work",
+    "Follow the documentation-first workflow: specs before code",
+    "Reference docs/INDEX.md to discover existing specs",
+    "Use docs/templates/ when creating new documentation artifacts"
+  ]
+}

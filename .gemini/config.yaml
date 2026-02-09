@@ -1,9 +1,17 @@
 # Gemini Code Assist Configuration
 # ------------------------------------------------------------------
 # Standardized Agent Configuration for Gemini 3 Pro
-# Version: 1.0.0 (Feb 2026)
+# Version: 1.1.0 (Feb 2026)
 
 schemaVersion: "1.0"
+
+# ------------------------------------------------
+# PROJECT — Documentation-First Workflow
+# ------------------------------------------------
+project:
+  primary_reference: "AGENTS.md"
+  documentation_index: "docs/INDEX.md"
+  workflow: "documentation-first"
 
 models:
   primary:
@@ -18,6 +26,16 @@ models:
       - "reasoning"
 
 # ------------------------------------------------
+# RULES — Agent behavioral constraints
+# ------------------------------------------------
+rules:
+  - "Read AGENTS.md completely before starting any task"
+  - "Follow documentation-first workflow: specs before code"
+  - "Use docs/templates/ for creating specs, ADRs, tickets"
+  - "Reference docs/INDEX.md to discover existing documentation"
+  - "Validate against spec acceptance criteria before marking work complete"
+
+# ------------------------------------------------
 # CONTEXT AWARENESS
 # ------------------------------------------------
 context:
@@ -27,6 +45,17 @@ context:
     - ".cursorrules"    # Project Rules (Standard)
     - "README.md"       # Project Overview
   
+  # Always include for documentation-first workflow
+  always_include:
+    - "AGENTS.md"
+    - "docs/INDEX.md"
+  
+  # Documentation discovery paths
+  documentation_paths:
+    - "docs/specs/**/*.md"
+    - "docs/adr/**/*.md"
+    - "docs/interfaces/**/*.md"
+
   # Ignore these patterns from automatic context (saves tokens)
   ignore:
     - "file://.geminiignore"
