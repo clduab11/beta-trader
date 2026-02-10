@@ -1,0 +1,29 @@
+services:
+  redis:
+    image: redis/redis-stack:latest
+    ports:
+      - "6379:6379"
+      - "8001:8001"  # RedisInsight UI
+    volumes:
+      - redis-data:/data
+    # AOF persistence for Council data durability on db1.
+    # - appendonly yes            → enable AOF journal
+    # - appendfsync everysec     → fsync once per second (durability/perf balance)
+    # - auto-aof-rewrite-percentage 100 → rewrite AOF when it doubles
+    # - maxmemory-policy volatile-lru   → evict only keys with TTL (cache on db0)
+    # Council hashes live on db1 (council:{uuid}) and have no TTL so they
+    # are never evicted.  Intel cache lives on db0 with TTL.
+    command: >-
+      redis-stack-server
+      --appendonly yes
+      --appendfsync everysec
+      --auto-aof-rewrite-percentage 100
+      --maxmemory-policy volatile-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  redis-data:
