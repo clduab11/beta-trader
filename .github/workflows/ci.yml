@@ -1,6 +1,6 @@
 # CI: Beta-Trader
 # ------------------------------------------------------------------
-# Validates Rust (Core) and Python (Strategies/Intel)
+# Validates Python (Intel/Routing/Council/Backend)
 # Runs on every Push and PR to Main
 
 name: CI
@@ -12,44 +12,9 @@ on:
     branches: [ "main" ]
 
 env:
-  CARGO_TERM_COLOR: always
   uv_VERSION: "0.5.21" # Pin uv version for reproducibility
 
 jobs:
-  # ------------------------------------------------
-  # RUST CORE
-  # ------------------------------------------------
-  test-rust:
-    name: Test Rust Core
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy, rustfmt
-
-      - name: Cache Cargo Registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Check Formatting
-        run: cargo fmt --all -- --check
-
-      - name: Clippy Linting
-        run: cargo clippy -- -D warnings
-
-      - name: Run Tests
-        run: cargo test --verbose
-
   # ------------------------------------------------
   # PYTHON LAYER
   # ------------------------------------------------
