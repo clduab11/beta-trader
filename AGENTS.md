@@ -56,87 +56,95 @@ You are an autonomous coding agent building **Beta-Trader**, a predictive bettin
 
 ---
 
+## 2.5 IMPLEMENTATION STATUS
+
+> **Current Phase**: Phase 1 — Foundation  
+> **Roadmap**: See `docs/tickets/ROADMAP.md`
+
+### Implemented Modules
+| Module | Directory | Description |
+|--------|-----------|-------------|
+| Intel | `intel/` | Multi-source intelligence pipeline (Exa.ai, Firecrawl, Tavily, Jina) with caching, circuit breakers, and retry logic |
+| Council | `council/` | Embedding-based council for decision aggregation |
+| Routing | `routing/` | 3-tier LLM cost routing with OpenRouter free model rotation |
+| Backend | `backend/` | FastAPI server with SSE streaming, depth analysis, and settings management |
+| Frontend | `frontend/` | Vite-based dashboard UI |
+
+### Planned Modules (specs in `docs/specs/`)
+| Module | Directory | Description |
+|--------|-----------|-------------|
+| Core | `core/` | NautilusTrader fork — Rust execution engine, risk engine, backtest |
+| Signals | `signals/` | Neural inference layer — LSTM, N-BEATS, TFT, DeepAR, ruv-FANN WASM |
+| Strategies | `strategies/` | Trading strategies — Polymarket arb, Kalshi event, crypto momentum |
+
+---
+
 ## 3. CODEBASE STRUCTURE
 
 ```
 beta-trader/
 ├── AGENTS.md                    # THIS FILE - Agent instructions
+├── CLAUDE.md                    # Claude Code agent configuration
 ├── README.md                    # Project overview
-├── pyproject.toml               # Python dependencies (uv/poetry)
-├── Cargo.toml                   # Rust workspace root
-├── fly.toml                     # fly.io deployment config
+├── pyproject.toml               # Python dependencies (uv)
+├── docker-compose.yml           # Local development services (Redis)
 │
-├── core/                        # NautilusTrader fork (Rust + Cython)
-│   ├── nautilus_core/           # Rust core library
-│   │   ├── Cargo.toml
-│   │   ├── src/
-│   │   │   ├── lib.rs
-│   │   │   ├── risk/            # Risk engine (KEEP)
-│   │   │   ├── execution/       # Order execution (KEEP)
-│   │   │   ├── backtest/        # Backtest engine (KEEP)
-│   │   │   └── portfolio/       # Portfolio mgmt (KEEP)
-│   │   └── ffi/                 # Python FFI bindings
-│   │
-│   └── nautilus_trader/         # Python/Cython layer
-│       ├── adapters/            # Venue adapters
-│       │   ├── binance/         # EXISTS - Binance adapter
-│       │   ├── kraken/          # EXISTS - Kraken adapter  
-│       │   ├── polymarket/      # TO BUILD - Polymarket adapter
-│       │   └── kalshi/          # TO BUILD - Kalshi adapter
-│       ├── strategy/            # Strategy base classes
-│       └── config/              # Configuration management
+├── backend/                     # FastAPI server (IMPLEMENTED)
+│   ├── __init__.py
+│   ├── main.py                  # FastAPI app entrypoint
+│   ├── depth.py                 # Depth analysis endpoints
+│   ├── middleware.py            # Request middleware
+│   ├── models.py                # Pydantic models
+│   ├── settings.py              # App settings/config
+│   └── sse.py                   # Server-Sent Events streaming
 │
-├── intel/                       # Intelligence pipeline
+├── intel/                       # Intelligence pipeline (IMPLEMENTED)
 │   ├── __init__.py
 │   ├── orchestrator.py          # Multi-source aggregator
-│   ├── sources/
-│   │   ├── exa.py               # Exa.ai neural search
-│   │   ├── firecrawl.py         # Deep web scraping
-│   │   ├── tavily.py            # News/general search
-│   │   └── jina.py              # Embeddings pipeline
-│   └── cache/
-│       └── redis_cache.py       # Response caching
+│   ├── cache.py                 # Response caching
+│   ├── circuit_breaker.py       # Circuit breaker pattern
+│   ├── errors.py                # Error types
+│   ├── events.py                # Event definitions
+│   ├── retry.py                 # Retry logic with backoff
+│   ├── types.py                 # Type definitions
+│   └── sources/                 # Intel source adapters
 │
-├── signals/                     # Neural inference layer
+├── council/                     # Decision council (IMPLEMENTED)
 │   ├── __init__.py
-│   ├── models/
-│   │   ├── lstm.py              # LSTM forecaster
-│   │   ├── nbeats.py            # N-BEATS forecaster
-│   │   ├── tft.py               # Temporal Fusion Transformer
-│   │   ├── deepar.py            # DeepAR probabilistic
-│   │   └── tcn.py               # Temporal Convolutional Net
-│   ├── ensemble.py              # Model ensemble orchestrator
-│   └── wasm/                    # WASM-compiled fast inference
-│       ├── Cargo.toml
-│       └── src/lib.rs           # ruv-FANN integration
+│   ├── embedder.py              # Embedding generation
+│   ├── manager.py               # Council manager
+│   ├── store.py                 # Council data store
+│   └── types.py                 # Type definitions
 │
-├── routing/                     # 3-tier cost routing
+├── routing/                     # 3-tier cost routing (IMPLEMENTED)
 │   ├── __init__.py
 │   ├── router.py                # Main routing logic
-│   ├── tiers/
-│   │   ├── wasm_tier.py         # Tier 1: Local WASM (free)
-│   │   ├── haiku_tier.py        # Tier 2: Claude Haiku ($0.25/1M)
-│   │   └── opus_tier.py         # Tier 3: Claude Opus ($15/1M)
 │   └── openrouter/              # Free model rotation
-│       ├── client.py            # OpenRouter API client
-│       └── models.py            # Model definitions & rotation
 │
-├── strategies/                  # Trading strategies
-│   ├── __init__.py
-│   ├── base_predictor.py        # Base prediction strategy
-│   ├── polymarket_arb.py        # Polymarket arbitrage
-│   ├── kalshi_event.py          # Kalshi event trading
-│   └── crypto_momentum.py       # Crypto momentum signals
+├── frontend/                    # Dashboard UI (IMPLEMENTED)
+│   ├── index.html
+│   ├── package.json
+│   ├── vite.config.js
+│   └── src/                     # Frontend source
+│
+├── core/                        # [PLANNED] NautilusTrader fork (Rust + Cython)
+├── signals/                     # [PLANNED] Neural inference layer
+├── strategies/                  # [PLANNED] Trading strategies
 │
 ├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── backtest/
+│   ├── unit/                    # Unit tests
+│   └── integration/             # Integration tests
 │
-└── scripts/
-    ├── setup.sh                 # Environment setup
-    ├── backtest.py              # Run backtests
-    └── deploy.py                # fly.io deployment
+├── docs/
+│   ├── specs/                   # Feature specifications
+│   ├── setup/                   # Setup guides
+│   ├── templates/               # Document templates
+│   ├── tickets/                 # Roadmap and tickets
+│   └── INDEX.md                 # Documentation index
+│
+└── .github/
+    ├── copilot-instructions.md  # Copilot agent instructions
+    └── workflows/               # CI/CD workflows
 ```
 
 ---
@@ -146,27 +154,31 @@ beta-trader/
 ### Core Languages
 | Layer | Language | Rationale |
 |-------|----------|-----------|
-| Execution Engine | **Rust** | NautilusTrader core, memory safety, speed |
-| Trading Logic | **Python 3.12+** | NautilusTrader Python layer, ML libs |
-| Fast Inference | **Rust → WASM** | ruv-FANN, sub-ms signal classification |
-| Adapters | **Python/Cython** | NautilusTrader adapter pattern |
+| Backend / API | **Python 3.12+** | FastAPI, async, ML ecosystem |
+| Frontend | **TypeScript/JS** | Vite dashboard UI |
+| Execution Engine | **Rust** | [PLANNED] NautilusTrader core |
+| Fast Inference | **Rust → WASM** | [PLANNED] ruv-FANN, sub-ms signal classification |
 
-### Key Dependencies
+### Key Dependencies (Current)
 ```toml
 # Python (pyproject.toml)
 [project.dependencies]
-nautilus_trader = ">=1.200.0"
-polars = ">=1.0.0"           # Fast dataframes
-torch = ">=2.2.0"            # Neural networks
-httpx = ">=0.27.0"           # Async HTTP
-redis = ">=5.0.0"            # Caching
-pydantic = ">=2.6.0"         # Config validation
+fastapi = ">=0.110.0"       # HTTP framework
+uvicorn = ">=0.27.0"        # ASGI server
+httpx = ">=0.27.0"          # Async HTTP
+numpy = ">=1.26.0"          # Numerical computing
+redis = ">=5.0.0"           # Caching
+pydantic = ">=2.6.0"        # Config validation
+python-dotenv = ">=1.0.0"   # Environment variables
+structlog = ">=24.1.0"      # Structured logging
+```
 
-# Rust (Cargo.toml)
-[dependencies]
-ruv-fann = "0.1"             # Neural network inference
-tokio = "1.0"                # Async runtime
-wasm-bindgen = "0.2"         # WASM bindings
+### Planned Dependencies (Phase 2+)
+```toml
+# Will be added when core/signals modules are implemented
+nautilus_trader = ">=1.200.0"  # Execution engine
+polars = ">=1.0.0"             # Fast dataframes
+torch = ">=2.2.0"              # Neural networks
 ```
 
 ### External APIs
@@ -325,8 +337,8 @@ class IntelOrchestrator:
 ## 7. DEVELOPMENT GUIDELINES
 
 ### Code Style
-- **Python**: Black formatter, Ruff linter, type hints required
-- **Rust**: rustfmt, clippy with `-D warnings`
+- **Python**: Ruff linter/formatter, type hints required
+- **Rust**: [PLANNED] rustfmt, clippy with `-D warnings`
 - **Docstrings**: Google style for Python, `///` for Rust
 
 ### Commit Convention
@@ -357,10 +369,10 @@ Scopes: core, intel, signals, routing, adapters, strategies
 
 ### Phase 1: Foundation (Current)
 - [ ] Fork NautilusTrader, strip to core components
-- [ ] Set up Rust/Python monorepo structure
+- [x] Set up Python monorepo structure (backend, intel, council, routing)
 - [ ] Implement Polymarket adapter skeleton
-- [ ] Create Intel orchestrator with Exa.ai integration
-- [ ] Build OpenRouter client with model rotation
+- [x] Create Intel orchestrator with multi-source integration
+- [x] Build OpenRouter client with model rotation
 
 ### Phase 2: Neural Layer
 - [ ] Port Neuro-Divergent LSTM model
@@ -448,14 +460,12 @@ FLY_API_TOKEN=
 ```bash
 # Development
 uv sync                          # Install Python deps
-cargo build --release            # Build Rust core
-pytest tests/ -v                 # Run tests
+uv run pytest tests/ -v          # Run tests
+uv run ruff check .              # Lint
+uv run ruff format .             # Format
 
-# Backtest
-python scripts/backtest.py --strategy=polymarket_arb --period=90d
-
-# Deploy
-fly deploy --app beta-trader
+# Backtest (Phase 2+)
+# python scripts/backtest.py --strategy=polymarket_arb --period=90d
 
 # Model rotation test
 python -c "from routing.openrouter.client import test_rotation; test_rotation()"
